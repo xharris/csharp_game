@@ -1,109 +1,36 @@
-text:wowie dt:0
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
-text:wowie dt:0.0166667
+[WARN] Could not parse colors: md_red_A100 md_red_A200 md_red_A400 md_red_A700 md_pink_A100 md_pink_A200 md_pink_A400 md_pink_A700 md_purple_A100 md_purple_A200 md_purple_A400 md_purple_A700 md_deep_purple_A100 md_deep_purple_A200 md_deep_purple_A400 md_deep_purple_A700 md_indigo_A100 md_indigo_A200 md_indigo_A400 md_indigo_A700 md_blue_A100 md_blue_A200 md_blue_A400 md_blue_A700 md_light_blue_A100 md_light_blue_A200 md_light_blue_A400 md_light_blue_A700 md_cyan_A100 md_cyan_A200 md_cyan_A400 md_cyan_A700 md_teal_A100 md_teal_A200 md_teal_A400 md_teal_A700 md_green_A100 md_green_A200 md_green_A400 md_green_A700 md_light_green_A100 md_light_green_A200 md_light_green_A400 md_light_green_A700 md_lime_A100 md_lime_A200 md_lime_A400 md_lime_A700 md_yellow_A100 md_yellow_A200 md_yellow_A400 md_yellow_A700 md_amber_A100 md_amber_A200 md_amber_A400 md_amber_A700 md_orange_A100 md_orange_A200 md_orange_A400 md_orange_A700 md_deep_orange_A100 md_deep_orange_A200 md_deep_orange_A400 md_deep_orange_A700 
+setup components
+setup system
+make planets
+new planet! 	{R:255 G:255 B:255 A:255}	{R:244 G:67 B:54 A:255}
+planet finished
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3
+[DEBUG] circle fill {R:244 G:67 B:54 A:255}, line {R:244 G:67 B:54 A:255}, thickness 3

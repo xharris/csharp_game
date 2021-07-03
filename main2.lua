@@ -1,41 +1,54 @@
-window{title="test"}
-background(white)
+function main()  
+  window{title="test"}
+  background(color("light_blue", 100))
 
--- 2D: x, y, r, sx, sy
--- 3D: x, y, z, rx, ry, rz, sx, sy, sz
+  print("make planets")
+  local sun, solar_system = newPlanet(game.width/2, game.height/2, 100, color("red"))
+  -- local earth, earth_orbit = newPlanet(100, 0, 50, color("blue"))
+  -- local moon, moon_orbit = newPlanet(20, 0, 20, color("white"))
 
-Planet = ecs.component{name="unknown", radius=0, color=white}
-Orbit = ecs.component{spin=0.1}
-
-function newPlanet(transform, planet, orbit)
-  local planet = ecs.entity( transform, planet, primitive.circle{fill=planet.color, } ) 
-  local orbit = ecs.entity( orbit or Orbit() )
-
-  orbit.add(planet)
-  planet.add(render)
-  return orbit, planet
+  -- ecs.scene:add(
+  --   solar_system + 
+  --     earth_orbit + 
+  --       moon_orbit
+  -- )
 end
 
-ecs.system{ Planet, primitive.circle }
-  :update(function(e, dt, planet, circle)
-    circle.fill = planet.color
+-- -- 2D: x, y, r, sx, sy
+-- -- 3D: x, y, z, rx, ry, rz, sx, sy, sz
+
+print("setup components")
+Transform = ecs.component{x=0,y=0,r=0}
+Planet = ecs.component{name="unknown", radius=0, color=color("white")}
+Orbit = ecs.component{spin=0.1}
+
+function newPlanet(x, y, radius, c)
+  print("new planet! ")
+  local e_planet = ecs.entity( 
+    Transform{x=x, y=y}, 
+    Planet{radius=100, color=c}, 
+    graphics.Circle{line=color("white"), fill=c, thickness=3} 
+  ) 
+  local e_orbit = ecs.entity( Transform(), Orbit() )
+  print("planet finished")
+
+  -- orbit.add(planet)
+  -- planet.add(render)
+  return e_orbit, e_planet
+end
+
+ecs.system{ Planet, graphics.Circle }
+  :update(function(e, dt, c)
+    local planet, circle = unpack(c)
+    circle.line = planet.color
     circle.r = planet.radius
   end)
 
-
+print("setup system")
 ecs.system{ Transform, Orbit }
-  :update(function(e, dt, tform, orbit)
+  :update(function(e, dt, c)
+    local tform, orbit = unpack(c)
     tform.r = tform.r + orbit.spin * dt
   end)
 
-function setup()  
-  local sun, solar_system = newPlanet( Transform{x=game.width/2, y=game.height/2}, Planet{radius=100, color=red} )
-  local earth, earth_orbit = newPlanet( Transform{x=100}, Planet{radius=50, color=blue} )
-  local moon, moon_orbit = newPlanet( Transform{x=20}, Planet{radius=20, color=white} )
-
-  ecs.scene:add(
-    solar_system + 
-      earth_orbit + 
-        moon_orbit
-  )
-end
+main()

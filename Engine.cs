@@ -36,7 +36,7 @@ namespace Blanke
     public Engine(string[] args)
     {
       MainScript = new Script();
-      Ecs = new ECS();
+      Ecs = new ECS(this);
 
       MoonSharpExtension.Load(this);
       Color.Load(this);
@@ -81,7 +81,7 @@ namespace Blanke
 
     protected override void Update(GameTime gt)
     {
-      Ecs.UpdateAll(gt);
+      Ecs.Update(gt);
       base.Update(gt);
     }
 
@@ -91,7 +91,7 @@ namespace Blanke
       Clear(BackgroundColor);
 
       _sb.Begin();
-      Ecs.DrawAll();
+      Ecs.Draw();
       _sb.End();
   
       // primitive = new Primitive(this.GraphicsDevice);

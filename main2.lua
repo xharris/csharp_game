@@ -22,25 +22,28 @@ Transform = ecs.component{x=0,y=0,r=0}
 Planet = ecs.component{name="unknown", radius=0, color=color("white")}
 Orbit = ecs.component{spin=0.1}
 
-function newPlanet(x, y, radius, c)
+function newPlanet(x, y, r, c)
   print("new planet! ")
   local e_planet = ecs.entity( 
     Transform{x=x, y=y}, 
-    Planet{radius=100, color=c}, 
+    Planet{radius=r, color=c}, 
     graphics.Circle{line=color("white"), fill=c, thickness=3} 
   ) 
   local e_orbit = ecs.entity( Transform(), Orbit() )
-  print("planet finished")
 
-  -- orbit.add(planet)
-  -- planet.add(render)
+  e_orbit:Add(e_planet)
+  print("planet finished")
   return e_orbit, e_planet
 end
+
+ecs.config = {
+  order = { "ui", "game" }
+}
 
 ecs.system{ Planet, graphics.Circle }
   :update(function(e, dt, c)
     local planet, circle = unpack(c)
-    circle.line = planet.color
+    circle.fill = planet.color
     circle.r = planet.radius
   end)
 

@@ -24,13 +24,11 @@ namespace Blanke
       ECS.System CircleSystem = new ECS.System(e.Ecs, Circle);
       CircleSystem.DrawFn = delegate(ECS.Entity ent, ECS.Component[] components)
       {
-        ECS.Component circle = ent[Circle];
+        ECS.Component circle = ent.Get(Circle);
         float r = circle.Get<float>("r");
         XnaColor fill = circle.Get<XnaColor>("fill");
         XnaColor line = circle.Get<XnaColor>("line");
         float thickness = circle.Get<float>("thickness");
-
-        Log.Debug($"circle fill {fill}, line {line}, thickness {thickness}");
         
         if (fill != Color.none)
           e._sb.DrawCircle(new Vector2(0, 0), r, circle.Get<int>("sides"), fill, r);

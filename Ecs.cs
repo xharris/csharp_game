@@ -10,22 +10,27 @@ namespace Blanke
   public delegate void DUpdate(ECS.Entity e, float dt, params ECS.Component[] components);
   public delegate void DDraw(ECS.Entity e, params ECS.Component[] components);
   public delegate void DUpdateAll(ECS.Entity[] e, float dt);
-  public delegate void DDrawAll(ECS.Entity[] e);
+  // public delegate void DDrawAll(ECS.Entity[] e);
 
   public class ECS {
     private List<System> systems;
     // { uuid:Component[] } TODO unused for now. use with systems that only deal with one component
     private Dictionary<int, List<Component>> components;
     private Dictionary<string, ComponentTemplate> templates;
+    public Entity root;
+    public Table config;
 
-    public ECS()
+    public ECS(Engine e)
     {
       systems = new List<System>();
       components = new Dictionary<int, List<Component>>();
       templates = new Dictionary<string, ComponentTemplate>();
+      root = new Entity(this);
+      config = new Table(e.MainScript);
+      config["order"] = new List<string>();
     }
 
-    public void UpdateAll(GameTime gt)
+    public void Update(GameTime gt)
     {
       float dt = (float)gt.ElapsedGameTime.TotalSeconds;
 
@@ -36,13 +41,14 @@ namespace Blanke
       }
     }
 
-    public void DrawAll()
+    public void Draw()
     {
-      foreach (System sys in systems)
-      {
-        if (sys.Size() > 0)
-          sys.Draw();
-      }
+      root.Render();
+      // foreach (System sys in systems)
+      // {
+      //   if (sys.Size() > 0)
+      //     sys.Draw();
+      // }
     }
 
     public System system(Table t)
@@ -68,11 +74,7 @@ namespace Blanke
 
     public Entity entity(params Component[] components)
     {
-      Entity e = new Entity(this);
-      foreach (Component c in components)
-      {
-        e.Add(c);
-      }
+      Entity e = new Entity(this, components);
       return e;
     }
 
@@ -94,9 +96,9 @@ namespace Blanke
       Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DUpdateAll), v => {
         return (DUpdateAll)((ECS.Entity[] e, float dt) => v.Function.Call(e, dt).ToObject<System>());
       });
-      Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DDrawAll), v => {
-        return (DDrawAll)((ECS.Entity[] e) => v.Function.Call(e).ToObject<System>());
-      });
+      // Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DDrawAll), v => {
+      //   return (DDrawAll)((ECS.Entity[] e) => v.Function.Call(e).ToObject<System>());
+      // });
 
       engine.MainScript.Globals["ecs"] = engine.Ecs;
     }
@@ -105,12 +107,13 @@ namespace Blanke
     public class System
     { 
       public DUpdateAll UpdateAllFn;
-      public DDrawAll DrawAllFn;
+      // public DDrawAll DrawAllFn;
       public DUpdate UpdateFn;
       public DDraw DrawFn;
       private List<Entity> Entities;
       public ID.Signature Signature;
       private ECS Parent;
+      public int Order = 0;
 
       public System(ECS ecs, params ComponentTemplate[] templates) {
         Entities = new List<Entity>();
@@ -145,9 +148,15 @@ namespace Blanke
         bool belongs = Signature.Validate(e.Signature);
         int idx = Entities.IndexOf(e);
         if (belongs && idx == -1)
+        {
           Entities.Add(e);
+          e.AddRenderSystem(this);
+        }
         if (!belongs && idx != -1)
+        {
           Entities.Remove(e);
+          e.RemoveRenderSystem(this);
+        }
       }
 
       /// <summary>iterate entities in system using UpdateFn</summary>
@@ -162,32 +171,28 @@ namespace Blanke
         {
           foreach (Entity ent in Entities)
           {
-            Component[] components = new Component[Signature.Size()];
-            int i = 0;
-            foreach (string id in Signature)
-            {
-              components[i++] = ent[id];
-            }
-            UpdateFn(ent, dt, components);
+            UpdateFn(ent, dt, ent.Get(Signature));
           }
         }
       }
 
       /// <summary>iterate entities in system using DrawFn</summary>
       [MoonSharpHidden]
-      public void Draw()
+      public void Draw(Entity e)
       {
-        if (DrawAllFn != null)
-        {
-          DrawAllFn(Entities.ToArray());
-        }
-        else if (DrawFn != null)
-        {
-          foreach (Entity ent in Entities)
-          {
-            DrawFn(ent, ent.Components.ToArray());
-          }
-        }
+        if (DrawFn != null)
+          DrawFn(e, e.Get(Signature));
+        // if (DrawAllFn != null)
+        // {
+        //   DrawAllFn(Entities.ToArray());
+        // }
+        // else if (DrawFn != null)
+        // {
+        //   foreach (Entity ent in Entities)
+        //   {
+        //     DrawFn(ent, ent.Components.ToArray());
+        //   }
+        // }
       }
       
       // LUA 
@@ -207,9 +212,18 @@ namespace Blanke
         UpdateAllFn = fn;
         return this;
       }
-      public System drawAll(DDrawAll fn)
+      public System order(int o)
       {
-        DrawAllFn = fn;
+        Order = o;
+        return this;
+      }
+      public System order(string oname)
+      {
+        DynValue order_key = DynValue.NewString("order");
+        if (Parent.config != null && Parent.config.Keys.Contains(order_key))
+        {
+          Order = Parent.config.Keys.ToList().IndexOf(order_key);
+        }
         return this;
       }
     }
@@ -418,27 +432,38 @@ namespace Blanke
     {
       public static int Count;
       public int Id;
-      public ID.Signature Signature;
-      public List<Component> Components;
-      private ECS Parent;
+      public ID.Signature Signature = new ID.Signature();
+      public List<Component> Components = new List<Component>();
+      private ECS Ecs;
+      private List<System> RenderSystems = new List<System>();
+      public Entity Parent;
+      public List<Entity> Children = new List<Entity>();
+      private bool SortChildren = false;
+      public int Z = 0;
 
       static Entity()
       {
         Count = 0;
       }
 
-      public Entity(ECS ecs)
+      public Entity(ECS ecs, params Component[] components)
       {
         Id = Count++;
-        Signature = new ID.Signature();
-        Components = new List<Component>();
-        Parent = ecs;
+        Ecs = ecs;
+        foreach (Component c in components)
+        {
+          Add(c);
+        }
+        if (ecs.root != null && !this.Equals(ecs.root))
+        {
+          ecs.root.Add(this);
+        }
       }
 
       public Entity Add(Component c)
       {
         Signature.Add(c.Id);
-        System.CheckAll(Parent, this);
+        System.CheckAll(Ecs, this);
         Components.Add(c);
         c.Ent = this;
         return this;
@@ -448,10 +473,59 @@ namespace Blanke
       {
         if (Signature.Remove(t.Id))
         {
-          System.CheckAll(Parent, this);
+          System.CheckAll(Ecs, this);
           Components.Remove(Components.Single(c => t.Equals(c)));
         }
         return this;
+      }
+
+      public Entity Add(Entity e)
+      {
+        if (!Children.Contains(e))
+        {
+          if (e.Parent != null)
+            e.Parent.Remove(e);
+          Children.Add(e);
+          SortChildren = true;
+          e.Parent = this;
+        }
+        return this;
+      }
+
+      public Entity Remove(Entity e)
+      {
+        Children.Remove(e);
+        return this;
+      }
+
+      public Entity AddRenderSystem(System sys)
+      {
+        RenderSystems.Add(sys);
+        RenderSystems.Sort((a, b) => a.Order.CompareTo(b.Order));
+        return this;
+      }
+
+      public Entity RemoveRenderSystem(System sys)
+      {
+        RenderSystems.Remove(sys);
+        return this;
+      }
+
+      public void Render()
+      {
+        Log.Debug($"draw {Id}");
+        foreach (System sys in RenderSystems)
+        {
+          sys.Draw(this);
+        }
+        if (SortChildren)
+        {
+          Children.Sort((a, b) => a.Z.CompareTo(b.Z));
+        }
+        foreach (Entity child in Children)
+        {
+          child.Render();
+        }
       }
  
       public bool Equals(Entity other)
@@ -459,20 +533,25 @@ namespace Blanke
         return Id.Equals(other.Id);
       }
 
-      public Component this[ComponentTemplate template]
+      public Component Get(ComponentTemplate template)
       {
-        get
-        {
-          return Components.Single(c => template.Id.Equals(c.Id));
-        }
+        return Components.Single(c => template.Id.Equals(c.Id));
       }
 
-      public Component this[string id]
+      public Component Get(string id)
       {
-        get
+        return Components.Single(c => c.Id.Equals(id));
+      }
+
+      public Component[] Get(ID.Signature sig)
+      {
+        Component[] components = new Component[sig.Size()];
+        int i = 0;
+        foreach (string id in sig)
         {
-          return Components.Single(c => c.Id.Equals(id));
+          components[i++] = Get(id);
         }
+        return components;
       }
     }
   }

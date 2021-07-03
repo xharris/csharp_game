@@ -4,7 +4,7 @@ function main()
 
   print("make planets")
   local sun, solar_system = newPlanet(game.width/2, game.height/2, 100, color("red"))
-  -- local earth, earth_orbit = newPlanet(100, 0, 50, color("blue"))
+  local earth, earth_orbit = newPlanet(100, 0, 50, color("blue"))
   -- local moon, moon_orbit = newPlanet(20, 0, 20, color("white"))
 
   -- ecs.scene:add(

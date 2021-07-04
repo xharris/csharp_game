@@ -1,9 +1,9 @@
-using MonoGame;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MoonSharp.Interpreter;
 
 using XnaColor = Microsoft.Xna.Framework.Color;
+using CP = Blanke.ECS.ComponentProp;
 
 namespace Blanke 
 
@@ -15,11 +15,11 @@ namespace Blanke
     public static void Load(Engine e)
     {
       // Circle
-      Circle = new ECS.ComponentTemplate(e.Ecs, "Circle",
-        new ECS.ComponentProp(e, "line", Color.DefaultFg),
-        new ECS.ComponentProp(e, "r", 1),
-        new ECS.ComponentProp(e, "sides", 32),
-        new ECS.ComponentProp(e, "fill", Color.none)
+      Circle = new ECS.ComponentTemplate(e, "Circle",
+        new CP(e, "line", Color.DefaultFg),
+        new CP(e, "r", 1),
+        new CP(e, "sides", 32),
+        new CP(e, "fill", Color.none)
       );
       ECS.System CircleSystem = new ECS.System(e.Ecs, Circle);
       CircleSystem.DrawFn = delegate(ECS.Entity ent, ECS.Component[] components)
@@ -31,9 +31,9 @@ namespace Blanke
         float thickness = circle.Get<float>("thickness");
         
         if (fill != Color.none)
-          e._sb.DrawCircle(new Vector2(0, 0), r, circle.Get<int>("sides"), fill, r);
+          e._sb.DrawCircle(ent.Transform.Translate2D, r, circle.Get<int>("sides"), fill, r, ent.Z);
         if (thickness > 0 && line != Color.none)
-          e._sb.DrawCircle(new Vector2(0, 0), r, circle.Get<int>("sides"), line, thickness);
+          e._sb.DrawCircle(ent.Transform.Translate2D, r, circle.Get<int>("sides"), line, thickness, ent.Z);
       };      
 
       UserData.RegisterType<Graphics>();

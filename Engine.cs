@@ -43,6 +43,7 @@ namespace Blanke
       ECS.Load(this);
       GameSetting.Load(this);
       ID.Load(this);
+      Transform.Load(this);
       Graphics.Load(this);
 
       // ECS.ComponentTemplate Text = new ECS.ComponentTemplate(Ecs, "Text", 

@@ -1,11 +1,25 @@
+-- ecs.config = {
+--   order = { "ui", "game" }
+-- }
+
 function main()  
   window{title="test"}
-  background(color("light_blue", 100))
+  background(color("grey", 900))
 
   print("make planets")
-  local sun, solar_system = newPlanet(game.width/2, game.height/2, 100, color("red"))
-  local earth, earth_orbit = newPlanet(100, 0, 50, color("blue"))
-  -- local moon, moon_orbit = newPlanet(20, 0, 20, color("white"))
+  local solar_system = newPlanet("Sun", 0, 100, color("red"))
+  local earth_orbit = newPlanet("Earth", 140, 50, color("blue"))
+  local moon_orbit = newPlanet("Moon", 50, 20, color("grey"))
+
+  solar_system.Transform.x = game.width/2
+  solar_system.Transform.y = game.height/2
+  solar_system:Add(
+    earth_orbit:Add(
+      moon_orbit
+    )
+  )
+
+  print(ecs:Tree())
 
   -- ecs.scene:add(
   --   solar_system + 
@@ -14,31 +28,25 @@ function main()
   -- )
 end
 
--- -- 2D: x, y, r, sx, sy
--- -- 3D: x, y, z, rx, ry, rz, sx, sy, sz
+Planet = ecs.component{radius=0, color=color("white")}
+Orbit = ecs.component{distance=0, spin=1}
 
-print("setup components")
-Transform = ecs.component{x=0,y=0,r=0}
-Planet = ecs.component{name="unknown", radius=0, color=color("white")}
-Orbit = ecs.component{spin=0.1}
-
-function newPlanet(x, y, r, c)
-  print("new planet! ")
+function newPlanet(name, distance, radius, c)
+  -- orbit
+  local e_orbit = ecs.entity( Orbit{distance=(distance > 0) and distance + radius or distance} )
+  -- planet
   local e_planet = ecs.entity( 
-    Transform{x=x, y=y}, 
-    Planet{radius=r, color=c}, 
-    graphics.Circle{line=color("white"), fill=c, thickness=3} 
+    Planet{radius=radius, color=c}, 
+    graphics.Circle{line=color("white"), fill=c, thickness=1} 
   ) 
-  local e_orbit = ecs.entity( Transform(), Orbit() )
+
+  e_orbit.Name = name.."Orbit"
+  e_planet.Name = name
 
   e_orbit:Add(e_planet)
-  print("planet finished")
-  return e_orbit, e_planet
-end
 
-ecs.config = {
-  order = { "ui", "game" }
-}
+  return e_orbit
+end
 
 ecs.system{ Planet, graphics.Circle }
   :update(function(e, dt, c)
@@ -47,11 +55,18 @@ ecs.system{ Planet, graphics.Circle }
     circle.r = planet.radius
   end)
 
-print("setup system")
-ecs.system{ Transform, Orbit }
+ecs.system{ Orbit }
   :update(function(e, dt, c)
-    local tform, orbit = unpack(c)
-    tform.r = tform.r + orbit.spin * dt
+    local orbit = unpack(c)
+    -- for c, child in ipairs(e.Children) do 
+    --   if c:Has(Planet) do 
+    --     x = x + c:Get(Planet).radius
+    --   end
+    -- end
+    if orbit.distance > 0 then 
+      e.Transform.x = orbit.distance
+    end
+    e.Transform.r = e.Transform.r + orbit.spin * dt
   end)
 
 main()

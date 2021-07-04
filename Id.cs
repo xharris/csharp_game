@@ -78,6 +78,9 @@ namespace Blanke
         IDList = new List<string>();
       }
 
+      public bool Has(ID id)
+        => IDList.Contains(id.Name);
+
       public void Add(ID id)
       {
         int idx = IDList.IndexOf(id.Name);

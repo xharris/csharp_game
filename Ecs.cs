@@ -7,6 +7,8 @@ using MoonSharp.Interpreter.Interop;
 
 namespace Blanke
 {
+  public delegate void DAdd(ECS.Entity e, params ECS.Component[] components);
+  public delegate void DRemove(ECS.Entity e, params ECS.Component[] components);
   public delegate void DUpdate(ECS.Entity e, float dt, params ECS.Component[] components);
   public delegate void DDraw(ECS.Entity e, params ECS.Component[] components);
   public delegate void DUpdateAll(ECS.Entity[] e, float dt);
@@ -26,8 +28,28 @@ namespace Blanke
       components = new Dictionary<int, List<Component>>();
       templates = new Dictionary<string, ComponentTemplate>();
       root = new Entity(this);
+      root.Name = "Root";
       config = new Table(e.MainScript);
       config["order"] = new List<string>();
+    }
+
+    private string Tree(Entity e, int level)
+    {
+      string out_str = "";
+      for (int l = 0; l < level; l++)
+        out_str += "\t";
+      out_str += e.ToString() + "\n";
+      foreach (Entity child in e.Children)
+      {
+        out_str += Tree(child, level+1);
+      }
+      return out_str;
+    }
+
+    ///<summary>get scene graph tree</summary>
+    public string Tree()
+    {
+      return Tree(root, 0);
     }
 
     public void Update(GameTime gt)
@@ -87,6 +109,13 @@ namespace Blanke
       UserData.RegisterType<System>();
       UserData.RegisterType<Component>();
 
+      
+      Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DAdd), v => {
+        return (DAdd)((ECS.Entity e, ECS.Component[] components) => v.Function.Call(e, components).ToObject<System>());
+      });
+      Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DRemove), v => {
+        return (DRemove)((ECS.Entity e, ECS.Component[] components) => v.Function.Call(e, components).ToObject<System>());
+      });
       Script.GlobalOptions.CustomConverters.SetScriptToClrCustomConversion(DataType.Function, typeof(DUpdate), v => {
         return (DUpdate)((ECS.Entity e, float dt, ECS.Component[] components) => v.Function.Call(e, dt, components).ToObject<System>());
       });
@@ -106,6 +135,8 @@ namespace Blanke
     // SYSTEM
     public class System
     { 
+      public DAdd AddFn;
+      public DRemove RemoveFn;
       public DUpdateAll UpdateAllFn;
       // public DDrawAll DrawAllFn;
       public DUpdate UpdateFn;
@@ -149,14 +180,30 @@ namespace Blanke
         int idx = Entities.IndexOf(e);
         if (belongs && idx == -1)
         {
-          Entities.Add(e);
-          e.AddRenderSystem(this);
+          Add(e);
         }
         if (!belongs && idx != -1)
         {
-          Entities.Remove(e);
-          e.RemoveRenderSystem(this);
+          Remove(e);
         }
+      }
+
+      [MoonSharpHidden]
+      public void Add(Entity e)
+      {
+        Entities.Add(e);
+        e.AddRenderSystem(this);
+        if (AddFn != null)
+          AddFn(e);
+      }
+
+      [MoonSharpHidden]
+      public void Remove(Entity e)
+      {
+        Entities.Remove(e);
+        e.RemoveRenderSystem(this);
+        if (RemoveFn != null)
+          RemoveFn(e);
       }
 
       /// <summary>iterate entities in system using UpdateFn</summary>
@@ -197,6 +244,16 @@ namespace Blanke
       
       // LUA 
 
+      public System add(DAdd fn)
+      {
+        AddFn = fn;
+        return this;
+      }
+      public System remove(DRemove fn)
+      {
+        RemoveFn = fn;
+        return this;
+      }
       public System update(DUpdate fn)
       {
         UpdateFn = fn;
@@ -265,17 +322,13 @@ namespace Blanke
       }
 
       public ComponentTemplate(ECS ecs, params ComponentProp[] props)
-      {
-        Name = Engine.newGuid();
-        Props = new List<ComponentProp>();
-        Id = new ID(Name);
-        Parent = ecs;
-        Parent.templates[Name] = this;
-        foreach (ComponentProp prop in props)
-        {
-          Add(prop);
-        }
-      }
+        : this(ecs, Engine.newGuid(), props) {}
+
+      public ComponentTemplate(Engine e, string name, params ComponentProp[] props)
+        : this(e.Ecs, name, props) {}
+
+      public ComponentTemplate(Engine e, params ComponentProp[] props)
+        : this(e.Ecs, Engine.newGuid(), props) {}
 
       public void Populate(Component c)
       {
@@ -350,9 +403,10 @@ namespace Blanke
       }
 
       public bool Equals(Component other)
-      {
-        return Id == other.Id;
-      }
+        => Id == other.Id;
+
+      public bool Equals(ComponentTemplate other)
+        => Id == other.Id;
 
       public DynValue Get(string k)
       {
@@ -430,16 +484,26 @@ namespace Blanke
     // ENTITY
     public class Entity
     {
-      public static int Count;
-      public int Id;
-      public ID.Signature Signature = new ID.Signature();
-      public List<Component> Components = new List<Component>();
       private ECS Ecs;
       private List<System> RenderSystems = new List<System>();
+      private bool SortChildren = false;
+      private static int Count;
+      public int Id;
+      public string Name = "Entity";
+      public ID.Signature Signature = new ID.Signature();
+      public List<Component> Components = new List<Component>();
       public Entity Parent;
       public List<Entity> Children = new List<Entity>();
-      private bool SortChildren = false;
-      public int Z = 0;
+      private int _Z = 0;
+      public int Z {
+        get => _Z;
+        set { 
+          if (Parent != null)
+            Parent.SortChildren = true;
+          _Z = value;
+        }
+      }
+      public Transform Transform = new Transform();
 
       static Entity()
       {
@@ -459,6 +523,9 @@ namespace Blanke
           ecs.root.Add(this);
         }
       }
+
+      public bool Has(ComponentTemplate c)
+        => Signature.Has(c.Id);
 
       public Entity Add(Component c)
       {
@@ -513,11 +580,17 @@ namespace Blanke
 
       public void Render()
       {
-        Log.Debug($"draw {Id}");
+        // transformations
+        if (Parent != null)
+          Transform.Update(Parent.Transform);
+        else 
+          Transform.Update();
+        // render this entity
         foreach (System sys in RenderSystems)
         {
           sys.Draw(this);
         }
+        // render the children
         if (SortChildren)
         {
           Children.Sort((a, b) => a.Z.CompareTo(b.Z));
@@ -531,6 +604,11 @@ namespace Blanke
       public bool Equals(Entity other)
       {
         return Id.Equals(other.Id);
+      }
+
+      public override string ToString()
+      {
+        return $"{Name}{{Id={Id}, Components={Signature}}}";
       }
 
       public Component Get(ComponentTemplate template)
